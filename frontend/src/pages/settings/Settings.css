@@ -1,0 +1,81 @@
+
+/* ProblemLens Settings — responsive finishing layer
+   Complements the existing Tailwind layout without changing its component logic. */
+.settings-page {
+  width: 100%;
+  min-width: 0;
+  color: var(--text-primary, #0f172a);
+  animation: settings-enter .42s cubic-bezier(.2,.75,.25,1) both;
+}
+.settings-page button,
+.settings-page input,
+.settings-page select { -webkit-tap-highlight-color: transparent; }
+.settings-page button { touch-action: manipulation; }
+.settings-page :is(button, input, select, textarea):focus-visible {
+  outline: 3px solid rgb(99 102 241 / 36%);
+  outline-offset: 3px;
+}
+.settings-page > section:first-child {
+  box-shadow: 0 18px 55px rgb(15 23 42 / 5%), 0 2px 8px rgb(15 23 42 / 3%);
+  transition: box-shadow .25s ease, border-color .25s ease;
+}
+.settings-page > section:first-child:hover {
+  box-shadow: 0 24px 70px rgb(15 23 42 / 8%), 0 3px 12px rgb(15 23 42 / 4%);
+}
+.settings-page [role="switch"] { flex-shrink: 0; }
+.settings-page select,
+.settings-page input { max-width: 100%; }
+.settings-page .settings-panel,
+.settings-page [class*="rounded-3xl"][class*="border"] {
+  min-width: 0;
+}
+.settings-page [role="alert"],
+.settings-page [role="status"] { overflow-wrap: anywhere; }
+.settings-page .settings-tab-list {
+  scrollbar-width: thin;
+  overscroll-behavior-x: contain;
+}
+.settings-page button:disabled { cursor: not-allowed; }
+.settings-page input,
+.settings-page select {
+  transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+}
+.settings-page input:hover:not(:disabled),
+.settings-page select:hover:not(:disabled) { border-color: rgb(129 140 248 / 65%); }
+.settings-page input:focus,
+.settings-page select:focus {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 4px rgb(99 102 241 / 12%);
+}
+.settings-page [role="switch"] span { will-change: transform; }
+.settings-page button:not(:disabled) { transition-duration: .18s; }
+.settings-page button:not(:disabled):active { transform: translateY(1px); }
+
+@keyframes settings-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (min-width: 1600px) {
+  .settings-page { max-width: 1480px; }
+}
+@media (max-width: 1024px) {
+  .settings-page { padding-bottom: 5.5rem; }
+}
+@media (max-width: 640px) {
+  .settings-page { padding-bottom: 6.5rem; }
+  .settings-page > section:first-child { border-radius: 1.4rem; }
+  .settings-page h1 { overflow-wrap: anywhere; }
+  .settings-page [role="dialog"] { max-height: calc(100dvh - 2rem); overflow-y: auto; }
+  .settings-page input,
+  .settings-page select { min-width: 0; }
+  .settings-page .fixed.bottom-4 { bottom: max(0.75rem, env(safe-area-inset-bottom)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .settings-page, .settings-page *,
+  .settings-page *::before, .settings-page *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+  }
+}

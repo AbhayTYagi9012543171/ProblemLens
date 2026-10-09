@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b1220" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate icon" href="/favicon.ico" />
+    <script>
+      (() => {
+        try {
+          const saved = JSON.parse(localStorage.getItem("problemlens_settings") || "null");
+          const preference = saved?.appearance?.theme || "system";
+          const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+          const dark = preference === "dark" || (preference === "system" && systemDark);
+          document.documentElement.classList.toggle("dark", dark);
+          document.documentElement.dataset.theme = dark ? "dark" : "light";
+        } catch (_) {
+          const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+          document.documentElement.classList.toggle("dark", dark);
+          document.documentElement.dataset.theme = dark ? "dark" : "light";
+        }
+      })();
+    </script>
+    <meta
+      name="description"
+      content="ProblemLens — AI-powered problem discovery and opportunity intelligence."
+    />
+    <title>ProblemLens — Opportunity Intelligence</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
