@@ -1,0 +1,216 @@
+/*
+ * ProblemLens — Premium UI refinement layer
+ * Purpose: unify spacing, depth, focus states, route motion and mobile behavior
+ * without replacing existing page logic or API integrations.
+ */
+
+:root {
+  --pl-accent: #4f46e5;
+  --pl-accent-strong: #4338ca;
+  --pl-accent-soft: rgba(79, 70, 229, 0.08);
+  --pl-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html {
+  scroll-padding-top: 5.5rem;
+}
+
+body {
+  background-image:
+    radial-gradient(ellipse at 4% 0%, rgba(79, 70, 229, 0.055), transparent 34rem),
+    radial-gradient(ellipse at 98% 18%, rgba(14, 165, 233, 0.035), transparent 30rem),
+    linear-gradient(180deg, var(--app-background), var(--app-background));
+}
+
+.dark body {
+  background-image:
+    radial-gradient(ellipse at 4% 0%, rgba(99, 102, 241, 0.095), transparent 34rem),
+    radial-gradient(ellipse at 98% 18%, rgba(14, 165, 233, 0.045), transparent 30rem),
+    linear-gradient(180deg, var(--app-background), var(--app-background));
+}
+
+/* Smooth, restrained page entrance; no distracting bounce. */
+.pl-route-content {
+  isolation: isolate;
+  animation: plRouteEnter 420ms var(--pl-ease) both;
+}
+
+@keyframes plRouteEnter {
+  from { opacity: 0; transform: translate3d(0, 8px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+/* A consistent professional surface language across pages. */
+.premium-card,
+.surface,
+.glass,
+.glass-strong,
+.data-table-wrapper {
+  border-color: var(--border-subtle);
+  transition:
+    border-color 220ms ease,
+    box-shadow 220ms ease,
+    background-color 220ms ease;
+}
+
+.premium-card:hover,
+.surface-hover:hover {
+  border-color: rgba(99, 102, 241, 0.28);
+  box-shadow:
+    0 2px 6px rgba(15, 23, 42, 0.025),
+    0 18px 42px rgba(15, 23, 42, 0.055);
+}
+
+.dark .premium-card:hover,
+.dark .surface-hover:hover {
+  border-color: rgba(129, 140, 248, 0.28);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.2);
+}
+
+.page-header {
+  align-items: center;
+  margin-bottom: clamp(1.25rem, 2.4vw, 2rem);
+}
+
+.page-title {
+  text-wrap: balance;
+  letter-spacing: -0.04em;
+}
+
+.page-subtitle,
+.section-description,
+.card-description {
+  text-wrap: pretty;
+}
+
+/* Forms: consistent focus, spacing, and readable labels. */
+.form-input,
+.form-select,
+.form-textarea,
+input.form-input,
+select.form-input,
+textarea.form-input {
+  min-height: 2.75rem;
+  border-radius: 0.8rem;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background-color 180ms ease;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  border-color: rgba(99, 102, 241, 0.7);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+  outline: none;
+}
+
+.dark .form-input:focus,
+.dark .form-select:focus,
+.dark .form-textarea:focus {
+  box-shadow: 0 0 0 4px rgba(129, 140, 248, 0.12);
+}
+
+/* Table polish: clear hierarchy and comfortable scanning. */
+.data-table-wrapper {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: 1rem;
+  background: var(--surface-primary);
+  box-shadow: var(--shadow-xs);
+  -webkit-overflow-scrolling: touch;
+}
+
+.data-table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.data-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--surface-secondary);
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+}
+
+.data-table tbody tr {
+  transition: background-color 160ms ease;
+}
+
+/* Better keyboard accessibility without changing click behavior. */
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible {
+  outline: 3px solid rgba(99, 102, 241, 0.42);
+  outline-offset: 3px;
+}
+
+button:disabled {
+  opacity: 0.58;
+}
+
+/* Avoid accidental horizontal overflow on dense data views. */
+#main-content,
+#main-content > div,
+.pl-route-content {
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (max-width: 768px) {
+  .page-header {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .page-header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .page-shell {
+    padding: 1rem;
+  }
+
+  .data-table-wrapper {
+    border-radius: 0.85rem;
+  }
+
+  .data-table th,
+  .data-table td {
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: clamp(1.35rem, 6vw, 1.75rem);
+  }
+
+  .page-subtitle {
+    font-size: 0.875rem;
+  }
+
+  .page-header-actions > button,
+  .page-header-actions > a {
+    max-width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pl-route-content {
+    animation: none !important;
+  }
+}
+
+html[data-animations="off"] .pl-route-content {
+  animation: none !important;
+}

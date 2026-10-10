@@ -1520,8 +1520,8 @@ export default function AppLayout() {
               <div
                 key={routeKey}
                 className="
+                  pl-route-content
                   min-w-0
-                  animate-[pageEnter_0.58s_cubic-bezier(0.16,1,0.3,1)]
                 "
               >
                 <Outlet />
