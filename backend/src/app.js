@@ -1,3 +1,4 @@
+
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -22,13 +23,24 @@ import { errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
 
-/* ==========================================================================
+/* =========================================================
+   TRUST PROXY
+   ========================================================= */
+
+// Render runs the application behind a reverse proxy.
+// Configure this before express-rate-limit is registered.
+// Confirm that one trusted proxy hop matches your deployment.
+if (env.nodeEnv === "production") {
+  app.set("trust proxy", 1);
+}
+
+/* =========================================================
    CORS CONFIGURATION
-   ========================================================================== */
+   ========================================================= */
 
 const configuredOrigins = String(env.clientUrl || "")
   .split(",")
-  .map((origin) => origin.trim())
+  .map((origin) => origin.trim().replace(/\/+$/, ""))
   .filter(Boolean);
 
 const localDevelopmentOrigins = [
@@ -40,85 +52,78 @@ const localDevelopmentOrigins = [
   "http://127.0.0.1:5175",
 ];
 
-const allowedOrigins = [
-  ...new Set([
-    ...configuredOrigins,
-    ...localDevelopmentOrigins,
-  ]),
-];
+const allowedOrigins = new Set([
+  ...configuredOrigins,
+  ...localDevelopmentOrigins,
+]);
 
 console.log("--------------------------------------------------");
 console.log("ProblemLens CORS Configuration");
 console.log("--------------------------------------------------");
 console.log("Environment:", env.nodeEnv);
-console.log("Configured client URL:", env.clientUrl || "Not configured");
+console.log(
+  "Configured client URL:",
+  env.clientUrl || "Not configured"
+);
 console.log("Allowed frontend origins:");
 
-allowedOrigins.forEach((origin) => {
+for (const origin of allowedOrigins) {
   console.log(`  ✓ ${origin}`);
-});
+}
 
 console.log("--------------------------------------------------");
 
-/* ==========================================================================
+/* =========================================================
    CORS OPTIONS
-   ========================================================================== */
+   ========================================================= */
 
 const corsOptions = {
   origin(origin, callback) {
-    /*
-     * Requests from Postman, curl, server-to-server requests etc.
-     * normally do not contain an Origin header.
-     */
+    // Requests without Origin include many server-to-server
+    // requests and direct API calls.
     if (!origin) {
       return callback(null, true);
     }
 
-    /*
-     * Exact allowed origin
-     */
-    if (allowedOrigins.includes(origin)) {
+    const normalizedOrigin = origin.replace(/\/+$/, "");
+
+    // Allow configured production and development origins.
+    if (allowedOrigins.has(normalizedOrigin)) {
       return callback(null, true);
     }
 
-    /*
-     * Development:
-     * Allow localhost / 127.0.0.1 on any port.
-     *
-     * This is useful when Vite changes from 5173 to 5174, etc.
-     */
+    // Permit localhost on changing ports during development.
     if (env.nodeEnv !== "production") {
       try {
-        const url = new URL(origin);
+        const parsedOrigin = new URL(origin);
 
         const isLocalHost =
-          url.hostname === "localhost" ||
-          url.hostname === "127.0.0.1";
+          parsedOrigin.hostname === "localhost" ||
+          parsedOrigin.hostname === "127.0.0.1";
 
-        if (isLocalHost) {
-          console.log(`✓ Development CORS allowed: ${origin}`);
+        if (
+          isLocalHost &&
+          ["http:", "https:"].includes(parsedOrigin.protocol)
+        ) {
+          console.log(
+            `Development CORS allowed: ${origin}`
+          );
+
           return callback(null, true);
         }
       } catch {
-        // Invalid origin. Continue to reject it.
+        // Invalid origin; reject it below.
       }
     }
 
-    console.warn(`❌ CORS blocked origin: ${origin}`);
+    console.warn(`CORS blocked origin: ${origin}`);
 
     return callback(
       new Error(`CORS blocked origin: ${origin}`)
     );
   },
 
-  /*
-   * IMPORTANT:
-   * Frontend Login.jsx uses:
-   *
-   * credentials: "include"
-   *
-   * Therefore this MUST be true.
-   */
+  // Required when the frontend sends credentials/cookies.
   credentials: true,
 
   methods: [
@@ -138,16 +143,14 @@ const corsOptions = {
     "X-Requested-With",
   ],
 
-  exposedHeaders: [
-    "Authorization",
-  ],
+  exposedHeaders: ["Authorization"],
 
   optionsSuccessStatus: 204,
 };
 
-/* ==========================================================================
+/* =========================================================
    SECURITY HEADERS
-   ========================================================================== */
+   ========================================================= */
 
 app.use(
   helmet({
@@ -157,29 +160,17 @@ app.use(
   })
 );
 
-/* ==========================================================================
-   CORS
-   ========================================================================== */
+/* =========================================================
+   CORS MIDDLEWARE
+   ========================================================= */
 
-/*
- * IMPORTANT:
- *
- * Do NOT use:
- *
- * app.options("*", cors());
- *
- * Express 5 / path-to-regexp throws:
- *
- * PathError: Missing parameter name at index 1: *
- *
- * The cors middleware below automatically handles OPTIONS
- * preflight requests.
- */
+// cors() handles OPTIONS preflight requests.
+// Avoid app.options("*", ...) with Express 5.
 app.use(cors(corsOptions));
 
-/* ==========================================================================
+/* =========================================================
    BODY PARSERS
-   ========================================================================== */
+   ========================================================= */
 
 app.use(
   express.json({
@@ -194,23 +185,21 @@ app.use(
   })
 );
 
-/* ==========================================================================
-   LOGGING
-   ========================================================================== */
+/* =========================================================
+   REQUEST LOGGING
+   ========================================================= */
 
 app.use(morgan("dev"));
 
-/* ==========================================================================
-   RATE LIMITING
-   ========================================================================== */
+/* =========================================================
+   API RATE LIMITING
+   ========================================================= */
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-
   max: 500,
 
   standardHeaders: true,
-
   legacyHeaders: false,
 
   message: {
@@ -219,14 +208,11 @@ const apiLimiter = rateLimit({
   },
 });
 
-/*
- * Apply rate limiting to API requests.
- */
 app.use("/api", apiLimiter);
 
-/* ==========================================================================
-   HEALTH CHECK
-   ========================================================================== */
+/* =========================================================
+   BACKEND HEALTH CHECK
+   ========================================================= */
 
 app.get("/health", (req, res) => {
   res.status(200).json({
@@ -237,9 +223,9 @@ app.get("/health", (req, res) => {
   });
 });
 
-/* ==========================================================================
+/* =========================================================
    API ROOT
-   ========================================================================== */
+   ========================================================= */
 
 app.get("/api", (req, res) => {
   res.status(200).json({
@@ -250,99 +236,71 @@ app.get("/api", (req, res) => {
   });
 });
 
-/* ==========================================================================
+/* =========================================================
    AUTHENTICATION ROUTES
-   ========================================================================== */
+   ========================================================= */
 
-app.use(
-  "/api/auth",
-  authRoutes
-);
+app.use("/api/auth", authRoutes);
 
-/* ==========================================================================
+/* =========================================================
    DASHBOARD ROUTES
-   ========================================================================== */
+   ========================================================= */
 
-app.use(
-  "/api/dashboard",
-  dashboardRoutes
-);
+app.use("/api/dashboard", dashboardRoutes);
 
-/* ==========================================================================
+/* =========================================================
    EVIDENCE ROUTES
-   ========================================================================== */
+   ========================================================= */
 
-app.use(
-  "/api/evidence",
-  evidenceRoutes
-);
+app.use("/api/evidence", evidenceRoutes);
 
-/* ==========================================================================
+/* =========================================================
    PROJECT ROUTES
-   ========================================================================== */
+   ========================================================= */
 
-app.use(
-  "/api/projects",
-  projectRoutes
-);
+app.use("/api/projects", projectRoutes);
 
-/* ==========================================================================
+/* =========================================================
    PROBLEM ROUTES
-   ========================================================================== */
+   ========================================================= */
 
-app.use(
-  "/api/problems",
-  problemRoutes
-);
+app.use("/api/problems", problemRoutes);
 
-/* ==========================================================================
+/* =========================================================
    AI ROUTES
-   ========================================================================== */
+   ========================================================= */
 
-app.use(
-  "/api/ai",
-  aiRoutes
-);
+app.use("/api/ai", aiRoutes);
+
+/* =========================================================
+   USER, SETTINGS AND REPORT ROUTES
+   ========================================================= */
 
 app.use("/api/users", userRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/reports", reportRoutes);
 
-/* ==========================================================================
+/* =========================================================
    GENERIC RESOURCE ROUTES
-   ========================================================================== */
+   Keep after specific routes.
+   ========================================================= */
 
-/*
- * IMPORTANT:
- *
- * This must remain AFTER the specific routes above.
- *
- * Otherwise generic routes could capture:
- *
- * /api/auth
- * /api/projects
- * /api/problems
- * etc.
- */
-app.use(
-  "/api",
-  resourceRoutes
-);
+app.use("/api", resourceRoutes);
 
-/* ==========================================================================
-   404 HANDLER
-   ========================================================================== */
+/* =========================================================
+   NOT FOUND HANDLER
+   ========================================================= */
 
 app.use(notFound);
 
-/* ==========================================================================
+/* =========================================================
    GLOBAL ERROR HANDLER
-   ========================================================================== */
+   ========================================================= */
 
 app.use(errorHandler);
 
-/* ==========================================================================
-   EXPORT
-   ========================================================================== */
+/* =========================================================
+   EXPORT EXPRESS APP
+   ========================================================= */
 
 export default app;
