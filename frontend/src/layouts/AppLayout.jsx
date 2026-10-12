@@ -30,8 +30,8 @@ import Topbar from "../components/layout/Topbar";
    ========================================================================== */
 
 const DESKTOP_BREAKPOINT = 1024;
-const MAX_PARTICLES = 58;
-const PARTICLE_DISTANCE = 125;
+const MAX_PARTICLES = 44;
+const PARTICLE_DISTANCE = 112;
 
 /* ==========================================================================
    LIVE CLOCK
@@ -645,38 +645,13 @@ function ScrollProgress() {
    ========================================================================== */
 
 function SystemTelemetry() {
-  const [latency, setLatency] =
-    useState(24);
-
-  const [requests, setRequests] =
-    useState(1248);
-
-  useEffect(() => {
-    const interval =
-      window.setInterval(() => {
-        setLatency(
-          Math.floor(
-            Math.random() * 12
-          ) + 18
-        );
-
-        setRequests(
-          (current) =>
-            current +
-            Math.floor(
-              Math.random() * 3
-            )
-        );
-      }, 3000);
-
-    return () =>
-      window.clearInterval(
-        interval
-      );
-  }, []);
-
+  /*
+   * Keep this badge truthful: live latency and request counts should only
+   * be displayed when the backend provides real telemetry.
+   */
   return (
     <div
+      title="ProblemLens workspace shell is active"
       className="
         hidden
         items-center
@@ -684,7 +659,7 @@ function SystemTelemetry() {
         rounded-full
         border
         border-slate-200/80
-        bg-white/55
+        bg-white/65
         px-3
         py-1.5
         text-[10px]
@@ -695,39 +670,26 @@ function SystemTelemetry() {
         transition-all
         duration-300
         hover:-translate-y-0.5
-        hover:border-indigo-300/40
-        hover:text-indigo-500
+        hover:border-indigo-300/50
+        hover:text-indigo-600
         dark:border-slate-800
-        dark:bg-slate-900/40
-        dark:text-slate-500
-        dark:hover:border-indigo-700/40
-        dark:hover:text-indigo-400
+        dark:bg-slate-900/50
+        dark:text-slate-400
+        dark:hover:border-indigo-700/50
+        dark:hover:text-indigo-300
         md:flex
       "
     >
-      <Gauge
-        size={11}
+      <Activity
+        size={12}
         className="text-indigo-500"
+        aria-hidden="true"
       />
-
-      <span>
-        {latency}ms
-      </span>
-
+      <span>Workspace active</span>
       <span
-        className="
-          h-3
-          w-px
-          bg-slate-200
-          dark:bg-slate-700
-        "
+        aria-hidden="true"
+        className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.55)]"
       />
-
-      <span>
-        {requests.toLocaleString()}
-        {" "}
-        ops
-      </span>
     </div>
   );
 }
@@ -784,7 +746,7 @@ function SystemStatus() {
       </span>
 
       <span>
-        All Systems Operational
+        Workspace Ready
       </span>
     </div>
   );

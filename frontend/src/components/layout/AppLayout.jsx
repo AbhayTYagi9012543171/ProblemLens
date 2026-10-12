@@ -18,8 +18,8 @@ import {
   useLocation,
 } from "react-router-dom";
 
-import Sidebar from "../components/layout/Sidebar";
-import Topbar from "../components/layout/Topbar";
+import Sidebar from "./Sidebar";
+import Topbar from "./Topbar";
 
 /* =========================================================
    APP LAYOUT
@@ -404,34 +404,6 @@ export default function AppLayout() {
             dark:from-slate-950/35
             dark:via-slate-950/10
             dark:to-transparent
-          "
-        />
-      </div>
-
-      {/* ===================================================
-          MOBILE BACKDROP
-      =================================================== */}
-
-      <div
-        className={[
-          "fixed inset-0 z-40 lg:hidden",
-          "transition-all duration-300",
-          mobileOpen
-            ? "pointer-events-auto bg-slate-950/60 opacity-100 backdrop-blur-sm"
-            : "pointer-events-none opacity-0",
-        ].join(" ")}
-        aria-hidden={!mobileOpen}
-      >
-        <button
-          type="button"
-          tabIndex={mobileOpen ? 0 : -1}
-          aria-label="Close navigation menu"
-          onClick={handleCloseSidebar}
-          className="
-            h-full
-            w-full
-            cursor-default
-            outline-none
           "
         />
       </div>

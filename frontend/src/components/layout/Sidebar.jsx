@@ -628,6 +628,7 @@ export default function Sidebar({
       ===================================================== */}
 
       <aside
+        id="mobile-navigation"
         aria-label="Main navigation"
         className={[
           "fixed inset-y-0 left-0 z-50 flex w-[292px] flex-col overflow-hidden",

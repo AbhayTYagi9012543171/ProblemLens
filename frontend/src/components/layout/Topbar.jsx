@@ -282,7 +282,7 @@ function SystemStatus() {
       </span>
 
       <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">
-        System operational
+        Workspace ready
       </span>
     </div>
   );
